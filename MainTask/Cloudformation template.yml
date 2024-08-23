@@ -92,7 +92,7 @@ Resources:
   TechplementS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: techplements3buckethp20242211
+      BucketName: techplements3buckethp202423
 Outputs:
   VPCId:
     Description: The ID of the VPC
