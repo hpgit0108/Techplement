@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template to create a VPC, an EC2 instance, an S3 bucket, and security groups.
+Resources:
+  TechplementVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: TechplementVPC
+  TechplementIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: TechplementIGW
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref TechplementVPC
+      InternetGatewayId: !Ref TechplementIGW
+  TechplementPubSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref TechplementVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: ap-south-1a
+      Tags:
+       - Key: Name
+         Value: TechplementPubSubnet
+         
+  TechplementRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref TechplementVPC
+      Tags:
+        - Key: Name
+          Value: TechplementRouteTable
+          
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TechplementRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref TechplementIGW
+      
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TechplementPubSubnet
+      RouteTableId: !Ref TechplementRouteTable
+         
+  TechplementSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH,HTTP and HTTPS access
+      VpcId: !Ref TechplementVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: TechplementSecurityGroup
+  TechplementEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: Techplement
+      ImageId: ami-0522ab6e1ddcc7055
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          SubnetId: !Ref TechplementPubSubnet
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref TechplementSecurityGroup
+      Tags:
+        - Key: Name
+          Value: TechplementEC2Instance
+  TechplementS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: techplements3buckethp20242211
+Outputs:
+  VPCId:
+    Description: The ID of the VPC
+    Value: !Ref TechplementVPC
+  InstanceId:
+    Description: The ID of the EC2 instance
+    Value: !Ref TechplementEC2Instance
+  S3BucketName:
+    Description: The name of the S3 bucket
+    Value: !Ref TechplementS3Bucket
+
