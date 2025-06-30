@@ -1,7 +1,4 @@
 This is test file
-<<<<<<< HEAD
 
 This is from branch_1
 
-Added new content in HP_Test2 branch.
->>>>>>> HP_Test2
